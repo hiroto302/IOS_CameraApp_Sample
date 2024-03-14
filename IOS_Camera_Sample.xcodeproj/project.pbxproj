@@ -11,6 +11,8 @@
 		A722F1142BA1B0EC0001D6EA /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A722F1132BA1B0EC0001D6EA /* ContentView.swift */; };
 		A722F1162BA1B0EF0001D6EA /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = A722F1152BA1B0EF0001D6EA /* Assets.xcassets */; };
 		A722F1192BA1B0EF0001D6EA /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = A722F1182BA1B0EF0001D6EA /* Preview Assets.xcassets */; };
+		A722F1202BA1DC830001D6EA /* CameraService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A722F11F2BA1DC830001D6EA /* CameraService.swift */; };
+		A722F1232BA1E7C10001D6EA /* CameraView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A722F1222BA1E7C10001D6EA /* CameraView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -19,6 +21,9 @@
 		A722F1132BA1B0EC0001D6EA /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		A722F1152BA1B0EF0001D6EA /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		A722F1182BA1B0EF0001D6EA /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
+		A722F11F2BA1DC830001D6EA /* CameraService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CameraService.swift; sourceTree = "<group>"; };
+		A722F1212BA1DF1D0001D6EA /* IOS-Camera-Sample-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = "IOS-Camera-Sample-Info.plist"; sourceTree = SOURCE_ROOT; };
+		A722F1222BA1E7C10001D6EA /* CameraView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CameraView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -51,10 +56,13 @@
 		A722F1102BA1B0EC0001D6EA /* IOS_Camera_Sample */ = {
 			isa = PBXGroup;
 			children = (
+				A722F1212BA1DF1D0001D6EA /* IOS-Camera-Sample-Info.plist */,
 				A722F1112BA1B0EC0001D6EA /* IOS_Camera_SampleApp.swift */,
 				A722F1132BA1B0EC0001D6EA /* ContentView.swift */,
 				A722F1152BA1B0EF0001D6EA /* Assets.xcassets */,
 				A722F1172BA1B0EF0001D6EA /* Preview Content */,
+				A722F11F2BA1DC830001D6EA /* CameraService.swift */,
+				A722F1222BA1E7C10001D6EA /* CameraView.swift */,
 			);
 			path = IOS_Camera_Sample;
 			sourceTree = "<group>";
@@ -139,6 +147,8 @@
 			files = (
 				A722F1142BA1B0EC0001D6EA /* ContentView.swift in Sources */,
 				A722F1122BA1B0EC0001D6EA /* IOS_Camera_SampleApp.swift in Sources */,
+				A722F1202BA1DC830001D6EA /* CameraService.swift in Sources */,
+				A722F1232BA1E7C10001D6EA /* CameraView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -274,6 +284,8 @@
 				DEVELOPMENT_ASSET_PATHS = "\"IOS_Camera_Sample/Preview Content\"";
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = "IOS-Camera-Sample-Info.plist";
+				INFOPLIST_KEY_NSCameraUsageDescription = TakePhotos;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -302,6 +314,8 @@
 				DEVELOPMENT_ASSET_PATHS = "\"IOS_Camera_Sample/Preview Content\"";
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = "IOS-Camera-Sample-Info.plist";
+				INFOPLIST_KEY_NSCameraUsageDescription = TakePhotos;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
