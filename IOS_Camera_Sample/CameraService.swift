@@ -59,7 +59,7 @@ class CameraService {
         // 1.1 AVCaptureSessionを作成 : デバイスからの入力と出力を管理するクラス
         let session = AVCaptureSession()
         // 1.2 device : デフォルトのカメラデバイスを取得・設定
-        // TODO : ここで Choosing a Capture Device(front- and back-facing cameras)　を検討
+        // TODO: ここで Choosing a Capture Device(front- and back-facing cameras)　を検討
         // default の場合、利用可能なベストな背面カメラが使用される
         // Call beginConfiguration() before changing a session’s inputs or outputs, and call commitConfiguration() after making changes. とあるが、使用カメラを変更する場合には呼び出す必要があるということ？
         if let device = AVCaptureDevice.default(for: .video) {
@@ -84,7 +84,6 @@ class CameraService {
                 // videoGravity : プレビューレイヤが、カメラからの映像をどのように表示するかを設定
                 // resizeAspectFill : 縦横比を維持したまま表示するための設定
                 previewLayer.videoGravity = .resizeAspectFill
-
                 previewLayer.session = session
 
                 // startRunnnigメソッド : 起動することで、セッションの入力から出力へのデータの流れが開始され、画面にカメラのキャプチャーを表示することができる
@@ -102,7 +101,7 @@ class CameraService {
     // with は、メソッドの引数 settings がこのメソッドに与えられる写真の撮影設定を表す
     // 現在の実装では、settings がデフォルトの設定は AVCapturePhotoSettings() であり、撮影時のデフォルトの設定を使用することを意味している
     //写真を撮るには、AVCapturePhotoSettingsオブジェクトを作成・設定し、AVCapturePhotoOutputのcapturePhoto(with:delegate:)メソッドに渡す 必要がある。
-    // TODO : FlashMode 時には AVCapturePhotoSettings() を変える必要がある！？
+    // TODO: FlashMode 時には AVCapturePhotoSettings() を変える必要がある！？
     // ex) let customSettings = AVCapturePhotoSettings()
     // customSettings.flashMode = .on
     // capturePhoto(with: customSettings)
