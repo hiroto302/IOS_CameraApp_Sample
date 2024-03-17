@@ -20,6 +20,12 @@ struct OutputPhotoView: View {
                     .ignoresSafeArea()
                     .onAppear {
                         monochromeImage = image
+                        /*
+                         info.plist に Privacy - Photo Library Usage Description を追加して許可を求める
+                         TODO: 許可されなかった時のエラー対応が必要
+                         */
+                        // カメラロールへの保存処理
+                        UIImageWriteToSavedPhotosAlbum(monochromeImage!, nil, nil, nil)
                     }
             // image が nil の場合
             } else {
