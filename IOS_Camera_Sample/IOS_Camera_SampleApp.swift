@@ -17,7 +17,8 @@ struct IOS_Camera_SampleApp: App {
         // WindowGroup : アプリケーションのウィンドウを管理するための構造体
         // 下記は、ContentViewをルートビューとして設定(アプリケーションが起動すると ContentViewが最初に表示さる)
         WindowGroup {
-            ContentView()
+//            ContentView()
+            MyCustomCameraView()
         }
     }
 }

@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		A71AD41C2BA81EC80070C9BE /* CameraDeviceSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = A71AD41B2BA81EC80070C9BE /* CameraDeviceSettings.swift */; };
+		A71AD41F2BA9283A0070C9BE /* CountDownTimer.swift in Sources */ = {isa = PBXBuildFile; fileRef = A71AD41E2BA9283A0070C9BE /* CountDownTimer.swift */; };
 		A722F1122BA1B0EC0001D6EA /* IOS_Camera_SampleApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = A722F1112BA1B0EC0001D6EA /* IOS_Camera_SampleApp.swift */; };
 		A722F1142BA1B0EC0001D6EA /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A722F1132BA1B0EC0001D6EA /* ContentView.swift */; };
 		A722F1162BA1B0EF0001D6EA /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = A722F1152BA1B0EF0001D6EA /* Assets.xcassets */; };
@@ -21,6 +23,8 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		A71AD41B2BA81EC80070C9BE /* CameraDeviceSettings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CameraDeviceSettings.swift; sourceTree = "<group>"; };
+		A71AD41E2BA9283A0070C9BE /* CountDownTimer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CountDownTimer.swift; sourceTree = "<group>"; };
 		A722F10E2BA1B0EC0001D6EA /* IOS_Camera_Sample.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = IOS_Camera_Sample.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		A722F1112BA1B0EC0001D6EA /* IOS_Camera_SampleApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IOS_Camera_SampleApp.swift; sourceTree = "<group>"; };
 		A722F1132BA1B0EC0001D6EA /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
@@ -47,6 +51,14 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		A71AD41D2BA928240070C9BE /* Model */ = {
+			isa = PBXGroup;
+			children = (
+				A71AD41E2BA9283A0070C9BE /* CountDownTimer.swift */,
+			);
+			path = Model;
+			sourceTree = "<group>";
+		};
 		A722F1052BA1B0EC0001D6EA = {
 			isa = PBXGroup;
 			children = (
@@ -90,10 +102,12 @@
 		A7EDCB972BA44AD9000942FD /* MyCameraApp */ = {
 			isa = PBXGroup;
 			children = (
+				A71AD41D2BA928240070C9BE /* Model */,
 				A7EDCB982BA44DB7000942FD /* MyCameraService.swift */,
 				A7EDCB9A2BA45575000942FD /* MyCameraView.swift */,
 				A7EDCB9C2BA46259000942FD /* MyCustomCameraView.swift */,
 				A7EDCB9E2BA4634C000942FD /* OutputPhotoView.swift */,
+				A71AD41B2BA81EC80070C9BE /* CameraDeviceSettings.swift */,
 			);
 			path = MyCameraApp;
 			sourceTree = "<group>";
@@ -171,7 +185,9 @@
 				A7EDCB9D2BA46259000942FD /* MyCustomCameraView.swift in Sources */,
 				A7EDCB9B2BA45575000942FD /* MyCameraView.swift in Sources */,
 				A722F1142BA1B0EC0001D6EA /* ContentView.swift in Sources */,
+				A71AD41C2BA81EC80070C9BE /* CameraDeviceSettings.swift in Sources */,
 				A722F1122BA1B0EC0001D6EA /* IOS_Camera_SampleApp.swift in Sources */,
+				A71AD41F2BA9283A0070C9BE /* CountDownTimer.swift in Sources */,
 				A722F1252BA2A5B30001D6EA /* CustomCameraView.swift in Sources */,
 				A722F1202BA1DC830001D6EA /* CameraService.swift in Sources */,
 				A7EDCB9F2BA4634C000942FD /* OutputPhotoView.swift in Sources */,

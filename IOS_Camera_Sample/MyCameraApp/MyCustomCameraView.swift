@@ -1,9 +1,16 @@
 import SwiftUI
+import AVFoundation
 
 // CameraView をカスタマイズして UI表示するための SwiftUIView
 struct MyCustomCameraView: View {
 
+    // カメラサービス クラスインスタンス作成
     let cameraService = MyCameraService()
+    // カメラのフラッシュモード設定
+    @State var flashMode: AVCaptureDevice.FlashMode = .off
+    // カメラのフォーカスモード設定
+    @State var focusMode: AVCaptureDevice.FocusMode = .continuousAutoFocus
+
     // 撮影された画像を保持するための変数
     @State var capturedImage: UIImage?
     // 出力画面に移動するか
@@ -12,6 +19,11 @@ struct MyCustomCameraView: View {
     // カウントダウンタイマー関連変数群
     @State private var isCountDown = false
     @State private var countDownTime = 3
+
+    let myCountDownTimer = CountDownTimer(time: 3.0)
+
+    // フラッシュモードの切り替え
+//    @State private var flashMode: AVCaptureDevice.TorchMode = .off
 
     var body: some View {
         ZStack {
@@ -33,8 +45,64 @@ struct MyCustomCameraView: View {
                     print(err.localizedDescription)
                 }
             }
-            // 撮影ボタンを中央下部に配置します。
             VStack {
+                HStack{
+                    // 撮影フラッシュ切り替え
+                    Button(action: {
+                        flashMode = cameraService.switchFlashMode(flashMode: flashMode)
+                    }, label: {
+                        Image(systemName: flashMode == .on ? "flashlight.on.fill" : "flashlight.slash")
+                            .font(.system(size: 40))
+                            .foregroundColor(.white)
+                            .padding(.bottom)
+                    })
+                    Spacer()
+                    // 前後カメラの切り替え
+                    Button(action: {
+                        cameraService.switchCameraPosition { error in
+                            if let error = error {
+                                print(error)
+                            }
+                        }
+                    }, label: {
+                        Image(systemName: "camera.rotate.fill")
+                            .font(.system(size: 40))
+                            .foregroundColor(.white)
+                            .padding(.bottom)
+                    }) 
+                    Spacer()
+                    // フォーカス切り替え
+                    Button(action: {
+                        cameraService.switchCameraFocusMode { error in
+                            if let error = error {
+                                print(error)
+                            }
+                        }
+
+                    }, label: {
+                        Image(systemName: "camera.metering.partial")
+                            .font(.system(size: 40))
+                            .foregroundColor(.white)
+                            .padding(.bottom)
+                    })
+                    Spacer()
+                    // カメラの表示映像の反転切り替え
+                    Button(action: {
+                        cameraService.switchMirrorView()
+                    }, label: {
+                        ZStack{
+                            Image(systemName: "video")
+                                .font(.system(size: 40))
+                                .foregroundColor(.white)
+                                .padding(.bottom)
+                            Image(systemName: "arrow.triangle.2.circlepath.doc.on.clipboard")
+                                .font(.system(size: 30))
+                                .foregroundColor(.white)
+                                .padding(.bottom)
+                        }
+                    })
+                }
+                .padding()
                 Spacer()
                 if isCountDown {
                     ZStack{
@@ -51,8 +119,9 @@ struct MyCustomCameraView: View {
                         // TODO: 現在の実装では countDownTimer の中で　cameraService.capturePhoto()実行されている。 Countdownが成功・失敗時の処理を分けるか、一度押されたら再度押せないようにする必要がある
                         // TODO: カウントダウンによるタイマー処理の実装
                         countDownTimer()
+//                        myCountDownTimer.startTimer()
                     }, label: {
-                        Image(systemName: "camera.fill")
+                        Image(systemName: "circle")
                             .font(.system(size: 72))
                             .foregroundColor(.white)
                             .padding(.bottom)
@@ -75,7 +144,7 @@ struct MyCustomCameraView: View {
             } else {
                 countDownTime = 3
                 isCountDown = false
-                cameraService.capturePhoto()
+                cameraService.capturePhoto(flashMode: flashMode)
             }
         }
     }

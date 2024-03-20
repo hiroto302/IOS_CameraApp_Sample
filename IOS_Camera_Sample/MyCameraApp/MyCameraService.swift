@@ -8,12 +8,12 @@ class MyCameraService {
     let previewLayer = AVCaptureVideoPreviewLayer()
     var delegate: AVCapturePhotoCaptureDelegate?
 
-    // フラッシュモード引数
-    var flashMode: AVCaptureDevice.TorchMode = .on
-
     // TODO: CustomCameraView で決定される変更を反映させる
     // TODO: カメラのデバイス設定変数
+    private var device: AVCaptureDevice?
     // TODO: フォトの設定変数
+    // フラッシュモード引数
+    var flashMode: AVCaptureDevice.TorchMode = .on
 
 
     // カメラ起動時の初期化
@@ -33,7 +33,8 @@ class MyCameraService {
                 guard granted else { return }
                 DispatchQueue.main.async {
                     // 使用許可を得たらカメラを設定
-                    self?.setupCamera(completion: completion)
+                    // TODO: setUpCamera_2 で問題なく動作するかテスト
+                    self?.setUpCamera_2(completion: completion)
                 }
             }
         case .restricted: // 制限されている場合
@@ -41,80 +42,180 @@ class MyCameraService {
         case .denied: // 拒否された場合
             break
         case .authorized: // 許可されている場合 (一度アプリを起動して既に許可されている場合)
-            setupCamera(completion: completion)
+            self.setUpCamera_2(completion: completion)
         @unknown default: // 未知の状態の場合
             break
         }
     }
 
-        private func setupCamera(completion: @escaping (Error?) -> ()) {
-            let session = AVCaptureSession()
-            if let device = AVCaptureDevice.default(for: .video) {
-                do {
+    func setUpCamera_2(settingDevice: AVCaptureDevice? = AVCaptureDevice.default(for: .video), completion: @escaping (Error?) -> ()) {
+        // 既にセッションがある場合、停止 と Input・Output の削除
+        // TODO: device の設定が変わっていない場合、実行する必要ないことを考慮すること
+        self.session?.stopRunning()
+        self.session?.inputs.forEach { self.session?.removeInput($0) }
+        self.session?.outputs.forEach { self.session?.removeOutput($0) }
+        // session の削除
+        self.session = nil
 
-                    let input = try AVCaptureDeviceInput(device: device)
-                                if session.canAddInput(input) {
-                                    session.addInput(input)
-                                }
+        let newSession = AVCaptureSession()
 
-                    // 使用デバイスの決定
-                    // TODO: 前後のカメラを使用できるように検討
-    //                let input = try AVCaptureDeviceInput(device: device)
+//        do {
+            // 新しいセッションを作成し、入力と出力を設定
+//            if let device = settingDevice {
+//                let newSession = try createSession(with: device)
+//                previewLayer.session = newSession
+//                previewLayer.videoGravity = .resizeAspectFill
+//
+//                self.session = newSession
+//                self.device = device
+//                // セッションの開始
+//                self.session?.startRunning()
+//                }
+//            } catch {
+//                completion(error)
+//            }
 
-                    // Input・Output を Session に追加
-                    if session.canAddInput(input) {
-                        session.addInput(input)
-                    }
-                    if session.canAddOutput(output) {
-                        session.addOutput(output)
-                    }
-
-                    try device.lockForConfiguration()
-                    if device.isFocusModeSupported(.autoFocus) {
-                        // デフォルト .continuousAutoFocus モード
-                        // TODO: .continuousAutoFocus と .autoFocus と
-                        device.focusMode = .continuousAutoFocus
-                        device.isSmoothAutoFocusEnabled = true
-                        print("Device Focus設定 on")
-                        device.unlockForConfiguration()
-                    }
-
-                    print(device.focusMode)
-
-                    // PreviewLayer を Session に追加
-                    previewLayer.videoGravity = .resizeAspectFill
-                    previewLayer.session = session
-
-                    session.startRunning()
-                    self.session = session
-                } catch {
-                    completion(error)
+        // 新しいデバイスでセッションを再設定
+        if let device = settingDevice {
+            do {
+                let input = try AVCaptureDeviceInput(device: device)
+                if newSession.canAddInput(input) == true {
+                    newSession.addInput(input)
                 }
+
+                if newSession.canAddOutput(output) == true {
+                    newSession.addOutput(output)
+                }
+
+                previewLayer.session = newSession
+                previewLayer.videoGravity = .resizeAspectFill
+
+                // TODO: この実行順序は正しいのか？　self.session を Start させても良い
+                // セッション開始
+                newSession.startRunning()
+
+                // 各変数を保持
+                self.session = newSession
+                self.device = device
+
+            } catch {
+                completion(error)
             }
         }
+    }
+
+    
+    // 前後のカメラ切り替え
+    func switchCameraPosition(completion: @escaping (Error?) -> ()) {
+        // カメラの位置切り替え
+        guard let currentDevice = device else { return }
+        let newPosition: AVCaptureDevice.Position = currentDevice.position == .back ? .front : .back
+        device = AVCaptureDevice.default(.builtInWideAngleCamera, for: .video, position: newPosition)
+        // カメラの切り替え後、再度セットアップ実行
+        setUpCamera_2(settingDevice: device, completion: completion)
+    }
+
+    // カメラの切り替え時の処理
+    func myswitchCameraPosition(completion: @escaping (Error?) -> ()) {
+        guard let currentDevice = device else { return }
+        let newPosition: AVCaptureDevice.Position = currentDevice.position == .back ? .front : .back
+        guard let newDevice = AVCaptureDevice.default(.builtInWideAngleCamera, for: .video, position: newPosition) else { return }
+
+        // 古いセッションを停止し、新しいセッションを作成
+        session?.stopRunning()
+        do {
+            self.session?.inputs.forEach { self.session?.removeInput($0) }
+            self.session?.outputs.forEach { self.session?.removeOutput($0) }
+            let newSession = try createSession(with: newDevice)
+            session = newSession
+            device = newDevice
+            previewLayer.session = newSession
+            newSession.startRunning()
+        } catch {
+            completion(error)
+        }
+    }
+
+    // セッションの作成と入出力の設定を別メソッドに分ける
+    private func createSession(with device: AVCaptureDevice) throws -> AVCaptureSession {
+        let session = AVCaptureSession()
+        let input = try AVCaptureDeviceInput(device: device)
+        if session.canAddInput(input) {
+            session.addInput(input)
+        }
+        if session.canAddOutput(output) {
+            session.addOutput(output)
+        }
+        return session
+    }
+
+
+    // カメラのフォーカス切り替え
+    func switchCameraFocusMode(completion: @escaping (Error?) -> ()) {
+        do{
+            try device!.lockForConfiguration()
+            device!.focusMode = device?.focusMode == .continuousAutoFocus ? .locked : .continuousAutoFocus
+            device!.unlockForConfiguration()
+            setUpCamera_2(settingDevice: device, completion: completion)
+        } catch {
+            print(completion)
+        }
+    }
+
+    // カメラの映像の反転on/off機能
+    func switchMirrorView() {
+        session?.beginConfiguration()
+//        if let connection = output.connection(with: .video) {
+//            connection.automaticallyAdjustsVideoMirroring.toggle()
+//            connection.isVideoMirrored.toggle()
+//            previewLayer.videoGravity = .resizeAspect 
+//        }
+
+        if let connection = output.connection(with: .video) {
+            if connection.isVideoMirroringSupported {
+                print("automaticallyAdjustsVideoMirroring : \(connection.automaticallyAdjustsVideoMirroring)")
+                print("isVideoMirrored : \(connection.isVideoMirrored)")
+                connection.automaticallyAdjustsVideoMirroring = false
+                connection.isVideoMirrored = true
+                print("support Mirror")
+            } else {
+                connection.isVideoMirrored = !connection.isVideoMirrored
+                print("No support Mirror")
+            }
+        }
+        session?.commitConfiguration()
+    }
+
+    // TODO: フラッシュモード切り替え 実装方法を再検討
+    func switchFlashMode(flashMode: AVCaptureDevice.FlashMode) -> AVCaptureDevice.FlashMode {
+        let newFlashMode: AVCaptureDevice.FlashMode = flashMode == .off ? .on : .off
+        return newFlashMode
+    }
 
     // カメラ撮影
     // TODO: settings をデフォルト以外にも対応 (フラッシュとか)
     // TODO: デバイス設定
-    func capturePhoto(with settings: AVCapturePhotoSettings = AVCapturePhotoSettings()) {
-        if let device = AVCaptureDevice.default(for: .video), device.isTorchModeSupported(flashMode) {
-//            settings.flashMode = .on
-//            device.focusMode = AVCaptureDevice.FocusMode.autoFocus
-            do {
-                    try device.lockForConfiguration()
+    func capturePhoto(with settings: AVCapturePhotoSettings = AVCapturePhotoSettings(), flashMode: AVCaptureDevice.FlashMode) {
+//        if let device = AVCaptureDevice.default(for: .video), device.isFlashModeSupported(.on) {
+//            do {
+//                    try device.lockForConfiguration()
+//                    if device.isTorchModeSupported(flashMode) {
+//                        // TODO: フラッシュモードの設定は AVCaptureDevice.FlashMode　でも設定できるが、AVCapturePhotoSettings で設定することが推奨されている
+//                        settings.flashMode = .on
+//                    }
+//                        device.unlockForConfiguration()
+//                    } catch {
+//                        print("Failed to lock configuration: \(error)")
+//                    }
+//        }
 
-                    if device.isTorchModeSupported(flashMode) {
-                        // TODO: フラッシュモードの設定は AVCaptureDevice.FlashMode　でも設定できるが、AVCapturePhotoSettings で設定することが推奨されている
-                        settings.flashMode = .on
-                    }
 
-                        device.unlockForConfiguration()
-                    } catch {
-                        print("Failed to lock configuration: \(error)")
-                    }
+        // フロントカメラの場合はフラッシュモードをoffに設定
+        if output.supportedFlashModes.contains(.on) {
+            settings.flashMode = flashMode
+        } else {
+            settings.flashMode = .off
         }
-
-        
 
 
         output.capturePhoto(with: settings, delegate: delegate!)
