@@ -35,12 +35,26 @@ struct MyCustomCameraView: View {
                     // 撮影した写真からデータを取得し、UIImageに変換
                     if let data = photo.fileDataRepresentation() {
                         capturedImage = UIImage(data: data)
+
+                        if (photo.portraitEffectsMatte != nil) {
+                            let resolvedSettings = photo.resolvedSettings
+//                            let matteImage = cropImageWithPortraitEffectsMatte(capturedImage!, photo.portraitEffectsMatte!)
+                            print("matt処理したよ")
+                            capturedImage = composeImageWithPortraitEffectsMatte(capturedImage!, portraitEffectsMatte: photo.portraitEffectsMatte!, resolvedSettings: resolvedSettings)
+                            
+                        }
+
+                        if (photo.depthData != nil) {
+                            print("depthData あるよ")
+                        }
+
                         // 撮影成功後 OutputPhotoView へ遷移
                         isOutputPhotoViewPresented.toggle()
                     } else {
                         // 画像データが見つからない場合はエラーメッセージを表示します。
                         print("Error: no image data found")
                     }
+
                 case .failure(let err):
                     print(err.localizedDescription)
                 }
@@ -147,6 +161,58 @@ struct MyCustomCameraView: View {
                 cameraService.capturePhoto(flashMode: flashMode)
             }
         }
+    }
+    
+    func cropImageWithPortraitEffectsMatte(_ image: UIImage, _ portraitEffectsMatte: AVPortraitEffectsMatte) -> UIImage? {
+        guard let cgImage = image.cgImage else {
+            return nil
+        }
+
+        let renderer = UIGraphicsImageRenderer(size: image.size)
+        let croppedImage = renderer.image { context in
+            // CGRect が取得したい
+            let rect = portraitEffectsMatte.accessibilityFrame
+            let imageRect = CGRect(origin: .zero, size: image.size)
+
+            // 元の画像を描画
+            context.cgContext.draw(cgImage, in: imageRect)
+
+            // マットの領域以外を透明にする
+            context.cgContext.setBlendMode(.clear)
+            context.cgContext.setFillColor(UIColor.clear.cgColor)
+            //            context.cgContext.fill(imageRect.di)
+        }
+        return croppedImage
+    }
+
+    func composeImageWithPortraitEffectsMatte(_ originalImage: UIImage, portraitEffectsMatte: AVPortraitEffectsMatte, resolvedSettings: AVCaptureResolvedPhotoSettings) -> UIImage? {
+        let matteDimensions = resolvedSettings.portraitEffectsMatteDimensions
+//        let matteData = portraitEffectsMatte.portraitEffectsMatteData
+        let mattingRect = portraitEffectsMatte.accessibilityFrame
+
+
+        // 1. ポートレートエフェクトマットから人物領域を取得
+        let personRect = mattingRect.applying(CGAffineTransform(scaleX: originalImage.size.width / CGFloat(matteDimensions.width), y: originalImage.size.height / CGFloat(matteDimensions.height)))
+
+        // 2. 人物領域を使って元画像から人物を切り抜く
+        let renderer = UIGraphicsImageRenderer(size: originalImage.size)
+        let croppedPersonImage = renderer.image { _ in
+            originalImage.draw(at: .zero)
+            UIColor.clear.set()
+            UIRectFill(personRect)
+        }
+
+        // 3. 任意の背景画像を用意する
+        let backgroundImage = UIImage(named: "background")
+
+        // 4. 切り抜いた人物画像と背景画像を合成する
+        UIGraphicsBeginImageContextWithOptions(originalImage.size, true, 0.0)
+        backgroundImage?.draw(in: CGRect(origin: .zero, size: originalImage.size))
+        croppedPersonImage.draw(in: CGRect(origin: .zero, size: originalImage.size))
+        let compositeImage = UIGraphicsGetImageFromCurrentImageContext()
+        UIGraphicsEndImageContext()
+
+        return compositeImage
     }
 }
 

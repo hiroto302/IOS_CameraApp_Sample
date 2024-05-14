@@ -12,8 +12,8 @@ struct OutputPhotoView: View {
     var body: some View {
         ZStack {
             // 撮影された画像を全画面で表示
-//            if let image = monochromeImage ?? capturedImage {
-            if let image = translateColorMonochrome(from: capturedImage!) {
+            if let image = capturedImage {
+//            if let image = translateColorMonochrome(from: capturedImage!) {
                 Image(uiImage: image)
                     .resizable()
                     .scaledToFill()

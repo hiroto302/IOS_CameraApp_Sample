@@ -58,6 +58,7 @@ class MyCameraService {
         self.session = nil
 
         let newSession = AVCaptureSession()
+        // Set a sessionPreset to a format that supports depth, such as .photo.
 
 //        do {
             // 新しいセッションを作成し、入力と出力を設定
@@ -74,18 +75,42 @@ class MyCameraService {
 //            } catch {
 //                completion(error)
 //            }
+//        let ssettingDevice = AVCaptureDevice.default(.builtInDualWideCamera, for: .video, position: .back)
+        let ssettingDevice = AVCaptureDevice.default(.builtInTrueDepthCamera, for: .video, position: .front)
 
         // 新しいデバイスでセッションを再設定
-        if let device = settingDevice {
+        if let device = ssettingDevice {
             do {
+//                self.session?.beginConfiguration()
+                newSession.sessionPreset = .photo
+
                 let input = try AVCaptureDeviceInput(device: device)
                 if newSession.canAddInput(input) == true {
                     newSession.addInput(input)
                 }
 
+                // ポートレートエフェクトマットをサポートするように設定
+//                output.setPillCrop(true, completionHandler: nil)
+//                output.setPortraitEffectsMatteDeliveryEnabled(true, completionHandler: nil)
+
+
                 if newSession.canAddOutput(output) == true {
                     newSession.addOutput(output)
+
                 }
+//                self.session?.commitConfiguration()
+                
+                // Add the cameraPhotoOutput to session before setting .isDepthDataDeliveryEnabled = true.
+                if output.isDepthDataDeliverySupported {
+                    print("DepthDataDelivery サポートしているよ")
+                    // 下記を true にする必要がある
+                    output.isDepthDataDeliveryEnabled = true
+//                    output.isPortraitEffectsMatteDeliveryEnabled = output.isPortraitEffectsMatteDeliverySupported
+                    output.isPortraitEffectsMatteDeliveryEnabled = true
+                    output.enabledSemanticSegmentationMatteTypes = output.availableSemanticSegmentationMatteTypes
+                    print("availableSemanticSegmentationMatteTypes :  \(output.availableSemanticSegmentationMatteTypes)")
+                }
+
 
                 previewLayer.session = newSession
                 previewLayer.videoGravity = .resizeAspectFill
@@ -96,7 +121,10 @@ class MyCameraService {
 
                 // 各変数を保持
                 self.session = newSession
-                self.device = device
+//                self.device = device
+                self.device = ssettingDevice
+
+//                print("activeDepthDataFormat : \(device.activeDepthDataFormat!)")
 
             } catch {
                 completion(error)
@@ -110,7 +138,10 @@ class MyCameraService {
         // カメラの位置切り替え
         guard let currentDevice = device else { return }
         let newPosition: AVCaptureDevice.Position = currentDevice.position == .back ? .front : .back
-        device = AVCaptureDevice.default(.builtInWideAngleCamera, for: .video, position: newPosition)
+//        device = AVCaptureDevice.default(.builtInWideAngleCamera, for: .video, position: newPosition)
+        device = AVCaptureDevice.default(.builtInDualWideCamera, for: .video, position: .back)
+//        device = AVCaptureDevice.default(.builtInTrueDepthCamera, for: .video, position: newPosition)
+//        device = self.videoDeviceDiscoverySession.devices
         // カメラの切り替え後、再度セットアップ実行
         setUpCamera_2(settingDevice: device, completion: completion)
     }
@@ -196,25 +227,23 @@ class MyCameraService {
     // TODO: settings をデフォルト以外にも対応 (フラッシュとか)
     // TODO: デバイス設定
     func capturePhoto(with settings: AVCapturePhotoSettings = AVCapturePhotoSettings(), flashMode: AVCaptureDevice.FlashMode) {
-//        if let device = AVCaptureDevice.default(for: .video), device.isFlashModeSupported(.on) {
-//            do {
-//                    try device.lockForConfiguration()
-//                    if device.isTorchModeSupported(flashMode) {
-//                        // TODO: フラッシュモードの設定は AVCaptureDevice.FlashMode　でも設定できるが、AVCapturePhotoSettings で設定することが推奨されている
-//                        settings.flashMode = .on
-//                    }
-//                        device.unlockForConfiguration()
-//                    } catch {
-//                        print("Failed to lock configuration: \(error)")
-//                    }
-//        }
-
 
         // フロントカメラの場合はフラッシュモードをoffに設定
         if output.supportedFlashModes.contains(.on) {
             settings.flashMode = flashMode
         } else {
             settings.flashMode = .off
+        }
+        
+//        output.isPortraitEffectsMatteDeliveryEnabled = true
+//        output.enabledSemanticSegmentationMatteTypes = output.availableSemanticSegmentationMatteTypes
+
+        if self.output.isDepthDataDeliverySupported {
+            settings.isPortraitEffectsMatteDeliveryEnabled = true
+            settings.isDepthDataDeliveryEnabled = true
+
+            settings.embedsDepthDataInPhoto = true
+            settings.embedsPortraitEffectsMatteInPhoto = true
         }
 
 

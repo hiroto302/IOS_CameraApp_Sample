@@ -53,7 +53,7 @@ struct MyCameraView: UIViewControllerRepresentable {
 
     // TODO: UINavigationController を利用した実装に変更できるか検討する
     // UINavigationControllerDelegate(プロトコル) : ナビゲーションコントローラーに関連した処理を行うためのプロトコルです。
-        class Coordinator: NSObject, AVCapturePhotoCaptureDelegate {
+    class Coordinator: NSObject, AVCapturePhotoCaptureDelegate {
 
         let parent: MyCameraView
         private var didFinishProcessingPhoto: (Result<AVCapturePhoto, Error>) -> ()
@@ -71,8 +71,52 @@ struct MyCameraView: UIViewControllerRepresentable {
                 parent.didFinishProcessingPhoto(.failure(error))
                 return
             }
+
+            guard let imageData = photo.fileDataRepresentation(),
+                  let previewImage = UIImage(data: imageData)
+            else {
+                return
+            }
+
+            print(photo.depthData ?? "depthData なし")
+            if photo.portraitEffectsMatte == nil {
+                print("画像にポートレイトエフェクトが含まれていません")
+            } else {
+                print("画像にポートレイトエフェクトが含まれています!")
+//                let croppedImage = cropImageWithPortraitEffectsMatte(previewImage, portraitEffectsMatte)
+                let resolvedSettings = photo.resolvedSettings
+                let matteDimensions = resolvedSettings.portraitEffectsMatteDimensions
+                let matteImage = cropImageWithPortraitEffectsMatte(previewImage, photo.portraitEffectsMatte!)
+            }
             // 処理が成功した場合、AVCapturePhotoをコールバック
             parent.didFinishProcessingPhoto(.success(photo))
         }
+
+        func cropImageWithPortraitEffectsMatte(_ image: UIImage, _ portraitEffectsMatte: AVPortraitEffectsMatte) -> UIImage? {
+            guard let cgImage = image.cgImage else {
+                return nil
+            }
+
+            let renderer = UIGraphicsImageRenderer(size: image.size)
+            let croppedImage = renderer.image { context in
+                // CGRect が取得したい
+                let rect = portraitEffectsMatte.accessibilityFrame
+                let imageRect = CGRect(origin: .zero, size: image.size)
+
+                // 元の画像を描画
+                context.cgContext.draw(cgImage, in: imageRect)
+
+                // マットの領域以外を透明にする
+                context.cgContext.setBlendMode(.clear)
+                context.cgContext.setFillColor(UIColor.clear.cgColor)
+    //            context.cgContext.fill(imageRect.di)
+            }
+
+            return croppedImage
+        }
+
+        
     }
+
+
 }
